@@ -1,0 +1,10 @@
+config_version=5
+
+[application]
+config/name="Stoem Terrain Repair Build"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+
+[editor_plugins]
+enabled=PackedStringArray("res://addons/stoem_terrain/plugin.cfg")

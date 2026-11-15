@@ -1,0 +1,4 @@
+.DS_Store
+.godot/
+review_state/*
+!review_state/.gdignore
