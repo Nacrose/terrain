@@ -1,7 +1,7 @@
 @tool
 class_name StoemTerrain3D
 extends Node3D
-## Stoem Terrain: continuous heightfield (768 x 768 m @ 1 m) + analytic carved
+## Terrain: continuous heightfield (768 x 768 m @ 1 m) + analytic carved
 ## caves/tunnels (spheres & capsules, implicit CSG). NO voxel data anywhere.
 ##
 ## Coordinate conventions:
@@ -126,7 +126,7 @@ func _ready() -> void:
         if edits_resource != null:
                 var restore_error := _load_edits_store(edits_resource)
                 if restore_error != OK:
-                        push_warning("Stoem Terrain could not restore its linked edit resource (%s)." % error_string(restore_error))
+                        push_warning("Terrain could not restore its linked edit resource (%s)." % error_string(restore_error))
                         if data == null or data.heights.is_empty():
                                 bake()
 

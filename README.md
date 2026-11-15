@@ -1,16 +1,16 @@
-# Stoem Terrain — local repair build
+# Terrain — local repair build
 
-This package contains the repaired terrain addon with material and appearance painting, a material catalog, and a first surface-cover/deposit workflow. It is a local development build based on the supplied Stoem Terrain 2.3.2 archive; the original ZIP was left unchanged.
+This package contains the repaired terrain addon with material and appearance painting, a material catalog, and a first surface-cover/deposit workflow. It is a local development build based on the supplied source archive; the original ZIP was left unchanged.
 
 The folder is also a small Godot verification project. It includes only the focused tests used for this repair, not the original full authoring/demo project.
 
 ## Install
 
-Copy `addons/stoem_terrain/` into your Godot project’s `addons/` folder, open **Project → Project Settings → Plugins**, and enable **Stoem Terrain**. The build was checked with Godot 4.7.2 using the supplied project’s Compatibility renderer. Other Godot versions, renderers and operating systems are not yet verified.
+Copy `addons/stoem_terrain/` into your Godot project’s `addons/` folder, open **Project → Project Settings → Plugins**, and enable **Terrain**. The build was checked with Godot 4.7.2 using the supplied project’s Compatibility renderer. Other Godot versions, renderers and operating systems are not yet verified.
 
 ## Material workflow
 
-- Select **Paint** in the Stoem Terrain dock.
+- Select **Paint** in the Terrain dock.
 - Choose a physical terrain material and either **Weighted random** or a named texture set.
 - Choose **Material + texture** to change the physical material, or **Texture only** to change appearance on cells already using the selected physical material.
 - Use **Create**, **Duplicate**, **Add Texture Set**, and **Edit Properties** to author materials. Material resources expose their supported physical parameters and texture maps in the Inspector.

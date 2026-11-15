@@ -65,7 +65,7 @@ func _process(_delta: float) -> bool:
         return true
 
 func _run_probes() -> void:
-        print("=== Stoem Terrain UX probes (editor input path) ===")
+        print("=== Terrain UX probes (editor input path) ===")
         t = Terrain.new()
         t.seed_value = 20261113
         root.add_child(t)

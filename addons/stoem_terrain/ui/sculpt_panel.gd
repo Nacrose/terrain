@@ -1,6 +1,6 @@
 @tool
 extends VBoxContainer
-## Stoem Terrain dock panel. Built in code so the plugin stays scene-file free.
+## Terrain dock panel. Built in code so the plugin stays scene-file free.
 ## Tools keep their own radius (carve has its own, dig its own), matching the
 ## original plugin's per-tool behaviour.
 
@@ -78,7 +78,7 @@ func _init() -> void:
         root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         add_child(root)
 
-        _add_heading(root, "Stoem Terrain")
+        _add_heading(root, "Terrain")
 
         # Tools grid
         var grid := GridContainer.new()
@@ -690,7 +690,7 @@ func set_terrain(p_t) -> void:
         _observed_catalog = null
         terrain = p_t
         if p_t == null:
-                _info.text = "No StoemTerrain3D selected.\nSelect one, or just open a scene\nthat contains one and click in the 3D view."
+                _info.text = "No Terrain node selected.\nSelect one, or open a scene\nthat contains one and click in the 3D view."
                 _edit_material_button.disabled = true
                 _archive_material_button.disabled = true
                 _replace_base_button.disabled = true

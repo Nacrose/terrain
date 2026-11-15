@@ -1,6 +1,6 @@
 # Implementation status
 
-Updated: 15 November 2026. Source: the local Stoem Terrain repair copy, compared against the unmodified extracted addon. The supplied ZIP remains unchanged.
+Updated: 15 November 2026. Source: the local Terrain repair copy, compared against the unmodified extracted addon. The supplied ZIP remains unchanged.
 
 ## Completed and verified in this build
 

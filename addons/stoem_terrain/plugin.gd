@@ -1,6 +1,6 @@
 @tool
 extends EditorPlugin
-## Stoem Terrain editor integration: dock panel, viewport brush input, undo/redo
+## Terrain editor integration: dock panel, viewport brush input, undo/redo
 ## shortcuts. Tools act on the SELECTED StoemTerrain3D node, or (fallback) on
 ## the first one found in the currently edited scene, so clicks keep working
 ## after an editor restart without re-selecting the node.
@@ -46,7 +46,7 @@ func _record_edits_resource_link(p_terrain: Node, p_old: Resource, p_new: Resour
         if not is_instance_valid(p_terrain):
                 return
         var history := EditorInterface.get_editor_undo_redo()
-        history.create_action("Link Stoem Terrain edit resource")
+        history.create_action("Link Terrain edit resource")
         history.add_do_property(p_terrain, "edits_resource", p_new)
         history.add_undo_property(p_terrain, "edits_resource", p_old)
         history.commit_action()

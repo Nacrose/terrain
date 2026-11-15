@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless acceptance probes for the Stoem Terrain plugin. Run:
+## Headless acceptance probes for the Terrain plugin. Run:
 ##   godot --headless --path <project> --script res://tests/run.gd
 ## Prints one PASS/FAIL line per assertion; exit code 0 iff everything passes.
 
@@ -18,7 +18,7 @@ var failures := 0
 var used_spots: Array = []
 
 func _initialize() -> void:
-        print("=== Stoem Terrain acceptance probes ===")
+        print("=== Terrain acceptance probes ===")
         var t = _make_terrain(20261113)
         _p0_queries(t)
         _p2_dig(t)

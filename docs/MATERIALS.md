@@ -1,6 +1,6 @@
 # Terrain material authoring
 
-Each terrain material is a shared `StoemTerrainMaterial` resource in the terrain’s `StoemTerrainMaterialCatalog`. Paint assignments refer to stable resource IDs, so renaming the display name or reordering the shelf does not change the saved material identity. Local pore state and painted appearance overrides are stored with terrain edits, not written back into the shared material.
+Each terrain material is a shared resource in the terrain’s material catalog. Paint assignments refer to stable resource IDs, so renaming the display name or reordering the shelf does not change the saved material identity. Local pore state and painted appearance overrides are stored with terrain edits, not written back into the shared material.
 
 ## Supported physical values
 
@@ -30,7 +30,7 @@ Regular **Paint** changes the base material and appearance; it leaves existing c
 
 ## Texture sets
 
-A `StoemTerrainMaterialVariant` keeps albedo, normal, roughness, height and ambient-occlusion maps together. `world_scale_m` controls metre-scale tiling; tint, roughness and normal strength are shared by the set. Weighted random selection is deterministic for a terrain seed, stable material ID and spatial patch. Set `appearance_patch_size_m` on the material to change the patch size. A chosen set is persisted as its stable variant ID; an empty appearance override means weighted variation.
+A texture set keeps albedo, normal, roughness, height and ambient-occlusion maps together. `world_scale_m` controls metre-scale tiling; tint, roughness and normal strength are shared by the set. Weighted random selection is deterministic for a terrain seed, stable material ID and spatial patch. Set `appearance_patch_size_m` on the material to change the patch size. A chosen set is persisted as its stable variant ID; an empty appearance override means weighted variation.
 
 Use the Paint dock’s **Material + texture** mode to update physical identity and appearance together. **Texture only** changes appearance on cells already using the selected material. It skips cells whose physical material differs and is undoable.
 
