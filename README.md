@@ -29,7 +29,9 @@ This is not the complete ecosystem plan. The implementation status document iden
 
 The source archive supplied no license file. This package is prepared for the user’s local project workflow; external redistribution rights have not been established.
 
-See [MATERIALS.md](docs/MATERIALS.md) for the currently supported physical values, their consumers and texture-set workflow. [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) separates verified features from deferred plan work.
+## Continue the project on another machine
+
+Clone the public repository and start with [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for current progress, verification and next steps. The full roadmap is in [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Supporting source context is in the [terrain bug audit](docs/TERRAIN_BUG_AUDIT.md), [Nepal Forest plan](docs/NEPAL_FOREST_PLAN.md), and [material authoring guide](docs/MATERIALS.md). The addon’s technical directory and class identifiers remain `addons/stoem_terrain/` and `StoemTerrain*` for compatibility; the user-facing plugin name is **Terrain**.
 
 ## Run the included checks
 

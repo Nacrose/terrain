@@ -1,6 +1,6 @@
 # Implementation status
 
-Updated: 15 November 2026. Source: the local Terrain repair copy, compared against the unmodified extracted addon. The supplied ZIP remains unchanged.
+Updated: 15 November 2026. This status tracks the current source in this repository. The original supplied ZIP remains unchanged outside the repository. Use [the implementation plan](docs/IMPLEMENTATION_PLAN.md) for the full roadmap and [the bug audit](docs/TERRAIN_BUG_AUDIT.md) for original-source baseline findings.
 
 ## Completed and verified in this build
 
