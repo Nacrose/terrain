@@ -231,6 +231,48 @@ func _initialize() -> void:
 	_check(catalog.restore_material(imported_id) and not catalog.is_archived(imported_id) \
 			and catalog.id_for_stable_id(imported_stable_id) == imported_id,
 			"archived material can be restored with all saved references intact")
+	var library_source := Catalog.new()
+	var library_material_id: int = library_source.create_material("Library loam")
+	var library_material = library_source.get_material(library_material_id)
+	library_material.key = &"alluvial_soil"
+	var library_variant = library_source.create_variant(library_material_id, "Mossy")
+	library_variant.albedo = texture
+	library_source.archive_material(library_material_id)
+	var library_path := "res://review_state/terrain_material_library.tres"
+	_check(ResourceSaver.save(library_source, library_path) == OK,
+			"whole material catalog exports as a reusable library")
+	var loaded_library: Resource = ResourceLoader.load(library_path, "",
+			ResourceLoader.CACHE_MODE_IGNORE)
+	var merge_destination := Catalog.new()
+	var merge_result: Dictionary = merge_destination.merge_catalog(loaded_library)
+	var merged_material_id: int = merge_destination.id_for_stable_id(library_material.stable_id)
+	var merged_material = merge_destination.get_material(merged_material_id)
+	var loaded_library_material = loaded_library.get_material(library_material_id)
+	_check(bool(merge_result.get("ok", false)) and int(merge_result.get("added", 0)) == 1 \
+			and int(merge_result.get("skipped", 0)) == 7 and merged_material_id >= 7,
+			"catalog merge adds new stable IDs and skips shared built-in identities")
+	_check(merged_material != library_material and merged_material.stable_id == library_material.stable_id \
+			and merged_material.key == library_material.key \
+			and merged_material.variants[0] != library_variant \
+			and merged_material.variants[0].stable_id == library_variant.stable_id \
+			and merged_material.variants[0].albedo == loaded_library_material.variants[0].albedo,
+			"merged material controls are independent while identities and texture references are preserved")
+	_check(merge_destination.is_archived(merged_material_id),
+			"catalog merge preserves archived shelf state for added materials")
+	var repeated_merge: Dictionary = merge_destination.merge_catalog(loaded_library)
+	_check(int(repeated_merge.get("added", -1)) == 0 \
+			and int(repeated_merge.get("skipped", 0)) == 8 \
+			and merge_destination.count() == 8,
+			"repeating a library merge is idempotent by stable material identity")
+	var invalid_library = loaded_library.duplicate(false)
+	invalid_library.materials = loaded_library.materials.duplicate()
+	invalid_library.materials[7] = loaded_library.materials[7].duplicate(false)
+	invalid_library.materials[7].hardness = NAN
+	var count_before_invalid_merge: int = merge_destination.count()
+	var invalid_merge: Dictionary = merge_destination.merge_catalog(invalid_library)
+	_check(not bool(invalid_merge.get("ok", true)) \
+			and merge_destination.count() == count_before_invalid_merge,
+			"invalid catalog merge is rejected without partial changes")
 	print("MATERIAL CATALOG RESULT: %d failure(s)" % failures)
 	quit(1 if failures > 0 else 0)
 

@@ -82,26 +82,60 @@ func import_material(p_source: Resource) -> int:
 			return -1
 	return _append_independent_copy(p_source, p_source.display_name)
 
-func _append_independent_copy(p_source: Resource, p_name: String) -> int:
-	var copy = p_source.duplicate(false)
-	copy.stable_id = _new_stable_id()
-	copy.display_name = p_name.strip_edges() if not p_name.strip_edges().is_empty() else "Imported Material"
-	copy.key = StringName(copy.display_name.to_snake_case())
-	copy.tags = p_source.tags.duplicate()
-	copy.wet_repose_response = p_source.wet_repose_response.duplicate(true) \
-			if p_source.wet_repose_response != null else null
-	copy.wet_cohesion_response = p_source.wet_cohesion_response.duplicate(true) \
-			if p_source.wet_cohesion_response != null else null
-	var independent_variants: Array[Resource] = []
-	for source_variant in p_source.variants:
-		if source_variant == null:
-			independent_variants.append(null)
+## Adds materials from another catalog without changing existing definitions or
+## terrain assignments. Stable-ID collisions are skipped; use single-material
+## import when a fresh copy of a colliding identity is desired.
+func merge_catalog(p_source: Resource) -> Dictionary:
+	if not p_source is StoemTerrainMaterialCatalog or not validate() \
+			or not p_source.validate():
+		return {"ok": false, "added": 0, "skipped": 0,
+				"error": "Source or destination catalog is invalid."}
+	var candidate_materials: Array[Resource] = materials.duplicate()
+	var candidate_order := display_order.duplicate()
+	var candidate_archived := archived_material_ids.duplicate()
+	var known_ids := {}
+	for material in candidate_materials:
+		known_ids[material.stable_id] = true
+	var added := 0
+	var skipped := 0
+	for source_slot in p_source.display_order:
+		var source_material = p_source.get_material(source_slot)
+		if known_ids.has(source_material.stable_id):
+			skipped += 1
 			continue
-		# Duplicate editable controls while sharing texture maps by reference.
-		var variant_copy = source_variant.duplicate(false)
-		variant_copy.stable_id = _new_stable_id()
-		independent_variants.append(variant_copy)
-	copy.variants = independent_variants
+		var copied_material := _make_independent_copy(source_material,
+				source_material.display_name, false)
+		if copied_material == null:
+			return {"ok": false, "added": 0, "skipped": 0,
+					"error": "A source material could not be copied; the catalog was unchanged."}
+		var new_slot := candidate_materials.size()
+		candidate_materials.append(copied_material)
+		candidate_order.append(new_slot)
+		known_ids[copied_material.stable_id] = true
+		if p_source.is_archived(source_slot):
+			candidate_archived.append(new_slot)
+		added += 1
+	if added == 0:
+		return {"ok": true, "added": 0, "skipped": skipped, "error": ""}
+	var previous_materials := materials
+	var previous_order := display_order
+	var previous_archived := archived_material_ids
+	materials = candidate_materials
+	display_order = candidate_order
+	archived_material_ids = candidate_archived
+	if not validate():
+		materials = previous_materials
+		display_order = previous_order
+		archived_material_ids = previous_archived
+		return {"ok": false, "added": 0, "skipped": 0,
+				"error": "Merged catalog failed validation; the catalog was unchanged."}
+	_emit_change()
+	return {"ok": true, "added": added, "skipped": skipped, "error": ""}
+
+func _append_independent_copy(p_source: Resource, p_name: String) -> int:
+	var copy := _make_independent_copy(p_source, p_name)
+	if copy == null:
+		return -1
 	materials.append(copy)
 	display_order.append(materials.size() - 1)
 	if not validate():
@@ -110,6 +144,31 @@ func _append_independent_copy(p_source: Resource, p_name: String) -> int:
 		return -1
 	_emit_change()
 	return materials.size() - 1
+
+func _make_independent_copy(p_source: Resource, p_name: String,
+			p_regenerate_ids: bool = true) -> Resource:
+	if p_source == null or not p_source is Definition:
+		return null
+	var copy = p_source.duplicate(false)
+	copy.stable_id = _new_stable_id() if p_regenerate_ids else p_source.stable_id
+	var trimmed_name := p_name.strip_edges()
+	copy.display_name = trimmed_name if not trimmed_name.is_empty() else "Imported Material"
+	copy.key = StringName(copy.display_name.to_snake_case()) if p_regenerate_ids else p_source.key
+	copy.tags = p_source.tags.duplicate()
+	copy.wet_repose_response = p_source.wet_repose_response.duplicate(true) \
+			if p_source.wet_repose_response != null else null
+	copy.wet_cohesion_response = p_source.wet_cohesion_response.duplicate(true) \
+			if p_source.wet_cohesion_response != null else null
+	var independent_variants: Array[Resource] = []
+	for source_variant in p_source.variants:
+		if source_variant == null or not source_variant is Variant:
+			return null
+		# Duplicate editable controls while sharing texture maps by reference.
+		var variant_copy = source_variant.duplicate(false)
+		variant_copy.stable_id = _new_stable_id() if p_regenerate_ids else source_variant.stable_id
+		independent_variants.append(variant_copy)
+	copy.variants = independent_variants
+	return copy
 
 func create_variant(p_material_id: int, p_name: String = "Texture Set") -> Resource:
 	var material = get_material(p_material_id)

@@ -15,6 +15,7 @@ Copy `addons/stoem_terrain/` into your Godot project’s `addons/` folder, open 
 - Choose **Material + texture** to change the physical material, or **Texture only** to change appearance on cells already using the selected physical material.
 - Use **Create**, **Duplicate**, **Add Texture Set**, and **Edit Properties** to author materials. Material resources expose their supported physical parameters and texture maps in the Inspector.
 - Use **Export Material** to save a `.tres` preset and **Import Material** to add it as a fresh copy with new material/texture-set IDs. Imported texture assets remain shared references.
+- Use **Export Library** to save the current catalog and **Merge Library** to add its missing stable material IDs into another catalog. Existing definitions stay unchanged, collisions are skipped, and repeating the merge does not duplicate entries.
 - **Archive selected** hides a material from the default shelf while preserving its terrain/save references; turn on **Show archived** to restore it later.
 - **Replace base uses of** lets you choose a source material, then replaces its 1 m material samples on the selected terrain with the selected paint material. It is undoable; cover layers remain unchanged.
 - The material dock shows 1 m material-sample and cover-layer usage across matching terrain nodes in the currently open scene.
@@ -24,7 +25,7 @@ Copy `addons/stoem_terrain/` into your Godot project’s `addons/` folder, open 
 
 ## Known scope
 
-This is not the complete ecosystem plan. The implementation status document identifies what is verified and what remains. In particular, material-specific mass balance, deeper geology beyond the four cover layers, contact-level rigid-body friction, catalog-wide preset merge and replacement workflows, visual viewport QA, configurable terrain dimensions, large-world streaming/LOD and the separate forest, grass/wind and wildlife plugins are not included in this package.
+This is not the complete ecosystem plan. The implementation status document identifies what is verified and what remains. In particular, material-specific mass balance, deeper geology beyond the four cover layers, contact-level rigid-body friction, catalog-wide replacement across terrains, visual viewport QA, configurable terrain dimensions, large-world streaming/LOD and the separate forest, grass/wind and wildlife plugins are not included in this package.
 
 The source archive supplied no license file. This package is prepared for the user’s local project workflow; external redistribution rights have not been established.
 

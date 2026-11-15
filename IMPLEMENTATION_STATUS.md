@@ -19,10 +19,10 @@ Updated: 15 November 2026. Source: the local Terrain repair copy, compared again
 - Complete texture-set resources support albedo, normal, roughness, height and ambient-occlusion maps, metre-based tiling, tint, roughness and normal strength.
 - Create, duplicate, edit and texture-set controls are available in the terrain dock. Material and appearance assignments persist by stable ID.
 - The dock aggregates cached 1 m material-sample and cover-layer usage for the selected stable material ID across terrain nodes in the currently open scene, including separate catalogs that contain that ID. It does not scan other scene files.
-- Material presets export as `.tres` resources and import as independent catalog copies with regenerated stable material and texture-set IDs. Import validation leaves the catalog unchanged on invalid resources; referenced texture assets stay shared.
+- Material presets export as `.tres` resources and import as independent catalog copies with regenerated stable material and texture-set IDs. Full catalog libraries can also be exported and merged: new materials preserve their stable IDs and archived state, matching IDs are skipped, invalid libraries leave the destination unchanged, and repeated merges do not duplicate entries. Both single-material import and catalog merge validation are covered by focused checks.
 - Materials can be archived from the default paint shelf and restored later. Archiving preserves the slot, stable ID, existing terrain assignments and saved edit references; it does not delete or reassign material data.
 - **Replace base uses** reassigns matching 1 m material samples on the selected terrain to the currently selected paint material. It is one undoable terrain edit; cover layers and other terrain nodes are untouched.
-- Create, duplicate, import, archive/restore and Add Texture Set now register actions with Godot's scene-aware editor undo history. Direct Inspector property edits have not been manually checked in a native editor session.
+- Create, duplicate, import, archive/restore, catalog-library merge and Add Texture Set now register actions with Godot's scene-aware editor undo history. Direct Inspector property edits have not been manually checked in a native editor session.
 
 ### Surface cover, deposits and depth queries (M3, partial)
 
@@ -40,15 +40,14 @@ Updated: 15 November 2026. Source: the local Terrain repair copy, compared again
 
 ## Verification evidence
 
-The listed test results predate the schema-v7/1 m material-grid change and the optional moisture-response curves. Neither change has been run through the test suites or editor scan in this turn.
-
 Ran with Godot 4.7.2 on the supplied project’s Compatibility renderer setting:
 
-- `tests/run.gd`: 229 supplied acceptance assertions, all pass.
-- `tests/regressions.gd`: 73 focused checks, all pass.
-- `tests/ux_probe.gd`: all editor-input probes pass, including open-scene usage aggregation and catalog create/texture-set undo/redo. These are scripted probes, not a manual mouse/keyboard session in a running native editor.
-- `tests/material_catalog.gd`: focused catalog, texture, appearance-only, usage count, deposit, stacked-depth query, excavation, full-stack, undo/redo, stable-ID persistence, preset import/export validation, base replacement, archive/restore and scene-linked startup checks pass.
-- `--headless --editor --path . --quit`: editor scan completes without script parse errors.
+- Earlier `tests/run.gd` and `tests/regressions.gd` runs passed 229 acceptance assertions and 73 focused checks. They predate the latest schema-v7/material-library changes and were not rerun in this continuation.
+- `tests/ux_probe.gd`: current editor-input probes pass, including open-scene usage aggregation, catalog create/texture-set undo/redo and material-library merge undo/redo. These are scripted probes, not a manual mouse/keyboard session in a running native editor.
+- `tests/material_catalog.gd`: focused catalog, texture, appearance-only, usage count, deposit, stacked-depth query, excavation, full-stack, undo/redo, stable-ID persistence, preset import/export, catalog library merge, base replacement, archive/restore and scene-linked startup checks pass with 0 failures.
+- `--headless --editor --path . --quit`: editor scan completes without script parse errors. This scan also caught and led to removal of unsupported `@export_tooltip` annotations in the material resource.
+
+Native editor dispatch and visual viewport review remain unverified.
 
 In this sandbox, Godot prints `user://` application-data and macOS certificate-store errors because those host locations are outside the writable project. The headless editor UX harness also prints RID/ObjectDB shutdown leak diagnostics after its assertions pass; treat those as an unresolved harness/editor shutdown warning until checked in a native session. Automated probes complete with exit code 0. This environment has not provided a visual viewport review or a manual native editor dispatch test.
 
@@ -56,9 +55,9 @@ In this sandbox, Godot prints `user://` application-data and macOS certificate-s
 
 | Milestone | State | Main remaining work |
 | --- | --- | --- |
-| M0 source/build continuebaseline | Verified | Local baseline is Godot 4.7.2; no broader platform claim. |
+| M0 source/build baseline | Verified | Local baseline is Godot 4.7.2; no broader platform claim. |
 | M1 terrain repair | Verified by supplied and focused suites; native editor dispatch unverified | Manual editor navigation, multiple scenes/terrains, scene reopen in an actual user project. |
-| M2 material catalog | Partial | Preset export/import, open-scene usage counts, reversible shelf archiving, selected-terrain 1 m sample replacement and editor undo for catalog actions are implemented. Preset merge, all-project usage counts, cover-layer/cross-terrain remapping and native Inspector undo review remain. |
+| M2 material catalog | Partial | Preset and full-library export/import/merge, open-scene usage counts, reversible shelf archiving, selected-terrain 1 m sample replacement and editor undo for catalog actions are implemented. All-project usage counts, cover-layer/cross-terrain remapping and native Inspector undo review remain. |
 | M3 depth/physical behavior | Partial | 1 m physical-material assignments plus up to four 1 m cover layers, depth queries, deposits, top-first excavation, editable moisture-response curves, undo/redo and schema-v7 persistence are implemented. Material-specific mass balance, deeper physical strata and rigid-body material contacts remain. |
 | M4 material appearance | Partial | Slope-aware blending, cave-wall variants, import validation, bounded resident texture library, real viewport visual QA and appearance edits without unnecessary collision work. |
 | M5 complete editor UX | Partial | Contextual CAD-style tool rail/settings, persistent preferences, preview/cancel for all operations, high-DPI/narrow-dock/theme checks and onboarding scene. |

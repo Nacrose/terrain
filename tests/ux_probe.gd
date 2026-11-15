@@ -12,6 +12,7 @@ const Terrain = preload("res://addons/stoem_terrain/nodes/terrain_3d.gd")
 const PluginScript = preload("res://addons/stoem_terrain/plugin.gd")
 const PanelScript = preload("res://addons/stoem_terrain/ui/sculpt_panel.gd")
 const Mat = preload("res://addons/stoem_terrain/core/terrain_material_table.gd")
+const Catalog = preload("res://addons/stoem_terrain/core/terrain_material_catalog.gd")
 
 class UsageProbeTerrain extends Node:
         var material_catalog: Resource
@@ -87,7 +88,7 @@ func _run_probes() -> void:
         _check(panel._material_usage_label.text.contains("Open scene usage (2 terrain(s))"),
                         "material dock counts matching terrain nodes in the open scene")
         _check(panel._material_usage_label.text.contains("%s 1 m material samples" % expected_scene_cells),
-						"material dock aggregates physical material sample usage across the scene")
+				"material dock aggregates physical material sample usage across the scene")
 
         _ux_carve_click()
         _ux_carve_drag()
@@ -135,6 +136,31 @@ func _ux_material_catalog_undo() -> void:
         undo_history.redo()
         _check(catalog.get_material(created_id).variants.size() == variants_before + 1,
                         "editor redo restores the added texture set")
+        var source_catalog := Catalog.new()
+        var source_slot: int = source_catalog.create_material("UX Library Material")
+        var source_material = source_catalog.get_material(source_slot)
+        source_catalog.materials = [source_material]
+        source_catalog.display_order = PackedInt32Array([0])
+        source_catalog.archived_material_ids = PackedInt32Array()
+        var library_path := "res://review_state/ux_material_library.tres"
+        _check(ResourceSaver.save(source_catalog, library_path) == OK,
+                        "material library fixture saves")
+        var merged_id: StringName = source_material.stable_id
+        var count_before_merge: int = catalog.count()
+        panel._material_file_mode_catalog = true
+        panel._material_file_mode_save = false
+        panel._on_catalog_file_selected(catalog, library_path)
+        _check(catalog.count() == count_before_merge + 1 \
+                        and catalog.id_for_stable_id(merged_id) >= 0,
+                        "dock library merge appends a new material")
+        undo_history.undo()
+        _check(catalog.count() == count_before_merge \
+                        and catalog.id_for_stable_id(merged_id) < 0,
+                        "editor undo removes the merged library material")
+        undo_history.redo()
+        _check(catalog.count() == count_before_merge + 1 \
+                        and catalog.id_for_stable_id(merged_id) >= 0,
+                        "editor redo restores the same merged material identity")
 
 ## Camera rig 60 m above p_ground, tilted so the centre pixel lands near p_ground.
 func _cam_over(p_ground: Vector3) -> ProbeCam:

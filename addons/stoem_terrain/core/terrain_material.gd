@@ -35,9 +35,11 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wet_cohesion_reduction: float = 0.70
 # Optional unit curves: X = normalized pore saturation, Y = multiplier for the
 # maximum wet reduction above. Null preserves the legacy linear response.
-@export_tooltip("X: normalized pore saturation (0–1). Y: multiplier for the maximum wet repose reduction (0–1). Null uses a linear response.")
+# X is normalized pore saturation (0–1); Y scales maximum wet repose reduction (0–1).
+# A null curve uses the legacy linear response.
 @export var wet_repose_response: Curve
-@export_tooltip("X: normalized pore saturation (0–1). Y: multiplier for the maximum wet cohesion reduction (0–1). Null uses a linear response.")
+# X is normalized pore saturation (0–1); Y scales maximum wet cohesion reduction (0–1).
+# A null curve uses the legacy linear response.
 @export var wet_cohesion_response: Curve
 @export_range(0.0, 1.0, 0.01) var porosity: float = 0.42
 

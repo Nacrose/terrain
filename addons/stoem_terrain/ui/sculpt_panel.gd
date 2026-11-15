@@ -70,6 +70,7 @@ var _file_dialog: EditorFileDialog = null
 var _file_mode_save := true
 var _material_file_dialog: EditorFileDialog = null
 var _material_file_mode_save := true
+var _material_file_mode_catalog := false
 var _mask_checks: Array = []
 var _stats: Label = null
 
@@ -242,6 +243,18 @@ func _init() -> void:
         import_material_button.text = "Import Material"
         import_material_button.pressed.connect(func() -> void: _open_material_file_dialog(false))
         preset_actions.add_child(import_material_button)
+        var catalog_actions := HBoxContainer.new()
+        root.add_child(catalog_actions)
+        var export_catalog_button := Button.new()
+        export_catalog_button.text = "Export Library"
+        export_catalog_button.tooltip_text = "Save this material catalog as a reusable .tres library."
+        export_catalog_button.pressed.connect(func() -> void: _open_catalog_file_dialog(true))
+        catalog_actions.add_child(export_catalog_button)
+        var merge_catalog_button := Button.new()
+        merge_catalog_button.text = "Merge Library"
+        merge_catalog_button.tooltip_text = "Add new stable material IDs from a library. Existing IDs and terrain assignments are preserved."
+        merge_catalog_button.pressed.connect(func() -> void: _open_catalog_file_dialog(false))
+        catalog_actions.add_child(merge_catalog_button)
 
         # Options
         _stability_check = CheckButton.new()
@@ -743,6 +756,7 @@ func _open_material_file_dialog(p_save: bool) -> void:
                 show_feedback("Select a valid material to export.")
                 return
         _material_file_mode_save = p_save
+        _material_file_mode_catalog = false
         if p_save:
                 _material_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
                 var material = catalog.get_material(paint_id)
@@ -752,9 +766,27 @@ func _open_material_file_dialog(p_save: bool) -> void:
                 _material_file_dialog.current_file = ""
         _material_file_dialog.popup_centered_ratio(0.5)
 
+func _open_catalog_file_dialog(p_save: bool) -> void:
+        var catalog = _current_catalog()
+        if not catalog is Catalog:
+                show_feedback("Select a terrain with a material catalog first.")
+                return
+        _material_file_mode_catalog = true
+        _material_file_mode_save = p_save
+        if p_save:
+                _material_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+                _material_file_dialog.current_file = "terrain_material_library.tres"
+        else:
+                _material_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+                _material_file_dialog.current_file = ""
+        _material_file_dialog.popup_centered_ratio(0.5)
+
 func _on_material_file_selected(p_path: String) -> void:
         var catalog = _current_catalog()
         if not catalog is Catalog or not is_instance_valid(terrain):
+                return
+        if _material_file_mode_catalog:
+                _on_catalog_file_selected(catalog, p_path)
                 return
         if _material_file_mode_save:
                 if not catalog.validate() or not catalog.is_valid_id(paint_id):
@@ -776,6 +808,30 @@ func _on_material_file_selected(p_path: String) -> void:
         paint_variant_id = &""
         _rebuild_material_controls()
         show_feedback("Imported as an independent material copy.\n%s" % p_path)
+
+func _on_catalog_file_selected(catalog: Resource, p_path: String) -> void:
+        if _material_file_mode_save:
+                if not catalog.validate():
+                        show_feedback("Material catalog is invalid; library was not exported.")
+                        return
+                var save_error := ResourceSaver.save(catalog, p_path)
+                show_feedback("Exported material library.\n%s" % p_path if save_error == OK \
+                                else "Material library export failed (%s)." % error_string(save_error))
+                return
+        var imported: Resource = ResourceLoader.load(p_path, "", ResourceLoader.CACHE_MODE_IGNORE)
+        var before_state: Dictionary = catalog.editor_state_snapshot()
+        var result: Dictionary = catalog.merge_catalog(imported)
+        if not bool(result.get("ok", false)):
+                show_feedback("Material library merge failed. %s" % String(result.get("error", "")))
+                return
+        var added := int(result.get("added", 0))
+        var skipped := int(result.get("skipped", 0))
+        if added == 0:
+                show_feedback("No new materials added. %s matching stable ID(s) were already in this catalog." % skipped)
+                return
+        catalog_mutation_recorded.emit(catalog, "Merge terrain material library", before_state,
+                        catalog.editor_state_snapshot())
+        show_feedback("Added %s material(s); skipped %s matching stable ID(s). Existing definitions and terrain assignments were preserved.\n%s" % [added, skipped, p_path])
 
 func _on_file_selected(p_path: String) -> void:
         if not is_instance_valid(terrain):
